@@ -43,8 +43,6 @@ service RouterService {
   SwapTokensForExactTokens : (amount_out: u256, amount_in_max: u256, path: vec actor_id, to: actor_id, deadline: u64) -> result (vec u256, RouterError);
   SwapTokensForExactVara : (amount_out: u256, amount_in_max: u256, path: vec actor_id, to: actor_id, deadline: u64) -> result (vec u256, RouterError);
   SwapVaraForExactTokens : (amount_out: u256, path: vec actor_id, to: actor_id, deadline: u64) -> result (vec u256, RouterError);
-  TransferFromLiquidity : (pair: actor_id, from: actor_id, to: actor_id, liquidity: u256) -> result (null, RouterError);
-  TransferLiquidity : (pair: actor_id, to: actor_id, liquidity: u256) -> result (null, RouterError);
   query GetAmountIn : (amount_out: u256, reserve_in: u256, reserve_out: u256) -> result (u256, RouterError);
   query GetAmountOut : (amount_in: u256, reserve_in: u256, reserve_out: u256) -> result (u256, RouterError);
   query GetAmountsIn : (amount_out: u256, path: vec actor_id) -> result (vec u256, RouterError);

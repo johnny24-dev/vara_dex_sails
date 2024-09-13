@@ -231,29 +231,6 @@ impl<R: Remoting + Clone> traits::RouterService for RouterService<R> {
             (amount_out, path, to, deadline),
         )
     }
-    fn transfer_from_liquidity(
-        &mut self,
-        pair: ActorId,
-        from: ActorId,
-        to: ActorId,
-        liquidity: U256,
-    ) -> impl Call<Output = Result<(), RouterError>, Args = R::Args> {
-        RemotingAction::<_, router_service::io::TransferFromLiquidity>::new(
-            self.remoting.clone(),
-            (pair, from, to, liquidity),
-        )
-    }
-    fn transfer_liquidity(
-        &mut self,
-        pair: ActorId,
-        to: ActorId,
-        liquidity: U256,
-    ) -> impl Call<Output = Result<(), RouterError>, Args = R::Args> {
-        RemotingAction::<_, router_service::io::TransferLiquidity>::new(
-            self.remoting.clone(),
-            (pair, to, liquidity),
-        )
-    }
     fn get_amount_in(
         &self,
         amount_out: U256,
@@ -639,42 +616,6 @@ pub mod router_service {
             type Params = (U256, Vec<ActorId>, ActorId, u64);
             type Reply = Result<Vec<U256>, super::RouterError>;
         }
-        pub struct TransferFromLiquidity(());
-        impl TransferFromLiquidity {
-            #[allow(dead_code)]
-            pub fn encode_call(
-                pair: ActorId,
-                from: ActorId,
-                to: ActorId,
-                liquidity: U256,
-            ) -> Vec<u8> {
-                <TransferFromLiquidity as ActionIo>::encode_call(&(pair, from, to, liquidity))
-            }
-        }
-        impl ActionIo for TransferFromLiquidity {
-            const ROUTE: &'static [u8] = &[
-                52, 82, 111, 117, 116, 101, 114, 83, 101, 114, 118, 105, 99, 101, 84, 84, 114, 97,
-                110, 115, 102, 101, 114, 70, 114, 111, 109, 76, 105, 113, 117, 105, 100, 105, 116,
-                121,
-            ];
-            type Params = (ActorId, ActorId, ActorId, U256);
-            type Reply = Result<(), super::RouterError>;
-        }
-        pub struct TransferLiquidity(());
-        impl TransferLiquidity {
-            #[allow(dead_code)]
-            pub fn encode_call(pair: ActorId, to: ActorId, liquidity: U256) -> Vec<u8> {
-                <TransferLiquidity as ActionIo>::encode_call(&(pair, to, liquidity))
-            }
-        }
-        impl ActionIo for TransferLiquidity {
-            const ROUTE: &'static [u8] = &[
-                52, 82, 111, 117, 116, 101, 114, 83, 101, 114, 118, 105, 99, 101, 68, 84, 114, 97,
-                110, 115, 102, 101, 114, 76, 105, 113, 117, 105, 100, 105, 116, 121,
-            ];
-            type Params = (ActorId, ActorId, U256);
-            type Reply = Result<(), super::RouterError>;
-        }
         pub struct GetAmountIn(());
         impl GetAmountIn {
             #[allow(dead_code)]
@@ -1058,19 +999,6 @@ pub mod traits {
             to: ActorId,
             deadline: u64,
         ) -> impl Call<Output = Result<Vec<U256>, RouterError>, Args = Self::Args>;
-        fn transfer_from_liquidity(
-            &mut self,
-            pair: ActorId,
-            from: ActorId,
-            to: ActorId,
-            liquidity: U256,
-        ) -> impl Call<Output = Result<(), RouterError>, Args = Self::Args>;
-        fn transfer_liquidity(
-            &mut self,
-            pair: ActorId,
-            to: ActorId,
-            liquidity: U256,
-        ) -> impl Call<Output = Result<(), RouterError>, Args = Self::Args>;
         fn get_amount_in(
             &self,
             amount_out: U256,
@@ -1124,5 +1052,5 @@ extern crate std;
 pub mod mockall {
     use super::*;
     use sails_rs::mockall::*;
-    mock! { pub RouterService<A> {} #[allow(refining_impl_trait)] #[allow(clippy::type_complexity)] impl<A> traits::RouterService for RouterService<A> { type Args = A; fn add_liquidity (&mut self, token_a: ActorId,token_b: ActorId,amount_a_desired: U256,amount_b_desired: U256,amount_a_min: U256,amount_b_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,U256,), RouterError>>;fn add_liquidity_vara (&mut self, token: ActorId,amount_token_desired: U256,amount_token_min: U256,amount_vara_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,U256,), RouterError>>;fn create_pair (&mut self, token_a: ActorId,token_b: ActorId,) -> MockCall<A, Result<(), RouterError>>;fn remove_liquidity (&mut self, token_a: ActorId,token_b: ActorId,liquidity: U256,amount_a_min: U256,amount_b_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,), RouterError>>;fn remove_liquidity_vara (&mut self, token: ActorId,liquidity: U256,amount_token_min: U256,amount_vara_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,), RouterError>>;fn swap_exact_tokens_for_tokens (&mut self, amount_in: U256,amount_out_min: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_exact_tokens_for_vara (&mut self, amount_in: U256,amount_out_min: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_exact_vara_for_tokens (&mut self, amount_out_min: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_tokens_for_exact_tokens (&mut self, amount_out: U256,amount_in_max: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_tokens_for_exact_vara (&mut self, amount_out: U256,amount_in_max: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_vara_for_exact_tokens (&mut self, amount_out: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn transfer_from_liquidity (&mut self, pair: ActorId,from: ActorId,to: ActorId,liquidity: U256,) -> MockCall<A, Result<(), RouterError>>;fn transfer_liquidity (&mut self, pair: ActorId,to: ActorId,liquidity: U256,) -> MockCall<A, Result<(), RouterError>>;fn get_amount_in (& self, amount_out: U256,reserve_in: U256,reserve_out: U256,) -> MockQuery<A, Result<U256, RouterError>>;fn get_amount_out (& self, amount_in: U256,reserve_in: U256,reserve_out: U256,) -> MockQuery<A, Result<U256, RouterError>>;fn get_amounts_in (& self, amount_out: U256,path: Vec<ActorId>,) -> MockQuery<A, Result<Vec<U256>, RouterError>>;fn get_amounts_out (& self, amount_in: U256,path: Vec<ActorId>,) -> MockQuery<A, Result<Vec<U256>, RouterError>>;fn get_reserves (& self, token_a: ActorId,token_b: ActorId,) -> MockQuery<A, Result<(U256,U256,ActorId,), RouterError>>;fn pair_for (& self, token_a: ActorId,token_b: ActorId,) -> MockQuery<A, Result<ActorId, RouterError>>;fn quote (& self, amount_a: U256,reserve_a: U256,reserve_b: U256,) -> MockQuery<A, Result<U256, RouterError>>;fn sort_tokens (& self, token_a: ActorId,token_b: ActorId,) -> MockQuery<A, Result<(ActorId,ActorId,), RouterError>>; } }
+    mock! { pub RouterService<A> {} #[allow(refining_impl_trait)] #[allow(clippy::type_complexity)] impl<A> traits::RouterService for RouterService<A> { type Args = A; fn add_liquidity (&mut self, token_a: ActorId,token_b: ActorId,amount_a_desired: U256,amount_b_desired: U256,amount_a_min: U256,amount_b_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,U256,), RouterError>>;fn add_liquidity_vara (&mut self, token: ActorId,amount_token_desired: U256,amount_token_min: U256,amount_vara_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,U256,), RouterError>>;fn create_pair (&mut self, token_a: ActorId,token_b: ActorId,) -> MockCall<A, Result<(), RouterError>>;fn remove_liquidity (&mut self, token_a: ActorId,token_b: ActorId,liquidity: U256,amount_a_min: U256,amount_b_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,), RouterError>>;fn remove_liquidity_vara (&mut self, token: ActorId,liquidity: U256,amount_token_min: U256,amount_vara_min: U256,to: ActorId,deadline: u64,) -> MockCall<A, Result<(U256,U256,), RouterError>>;fn swap_exact_tokens_for_tokens (&mut self, amount_in: U256,amount_out_min: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_exact_tokens_for_vara (&mut self, amount_in: U256,amount_out_min: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_exact_vara_for_tokens (&mut self, amount_out_min: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_tokens_for_exact_tokens (&mut self, amount_out: U256,amount_in_max: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_tokens_for_exact_vara (&mut self, amount_out: U256,amount_in_max: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn swap_vara_for_exact_tokens (&mut self, amount_out: U256,path: Vec<ActorId>,to: ActorId,deadline: u64,) -> MockCall<A, Result<Vec<U256>, RouterError>>;fn get_amount_in (& self, amount_out: U256,reserve_in: U256,reserve_out: U256,) -> MockQuery<A, Result<U256, RouterError>>;fn get_amount_out (& self, amount_in: U256,reserve_in: U256,reserve_out: U256,) -> MockQuery<A, Result<U256, RouterError>>;fn get_amounts_in (& self, amount_out: U256,path: Vec<ActorId>,) -> MockQuery<A, Result<Vec<U256>, RouterError>>;fn get_amounts_out (& self, amount_in: U256,path: Vec<ActorId>,) -> MockQuery<A, Result<Vec<U256>, RouterError>>;fn get_reserves (& self, token_a: ActorId,token_b: ActorId,) -> MockQuery<A, Result<(U256,U256,ActorId,), RouterError>>;fn pair_for (& self, token_a: ActorId,token_b: ActorId,) -> MockQuery<A, Result<ActorId, RouterError>>;fn quote (& self, amount_a: U256,reserve_a: U256,reserve_b: U256,) -> MockQuery<A, Result<U256, RouterError>>;fn sort_tokens (& self, token_a: ActorId,token_b: ActorId,) -> MockQuery<A, Result<(ActorId,ActorId,), RouterError>>; } }
 }

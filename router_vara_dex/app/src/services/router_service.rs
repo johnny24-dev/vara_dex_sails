@@ -241,24 +241,13 @@ impl RouterService {
     }
     // public functions
 
-    pub async fn transfer_from_liquidity(&mut self, pair:ActorId, from:ActorId, to:ActorId, liquidity:U256) -> Result<(),RouterError>{
+    async fn transfer_from_liquidity(&mut self, pair:ActorId, from:ActorId, to:ActorId, liquidity:U256) -> Result<(),RouterError>{
         let transfer_liquidity_res = self.lp_client.transfer_from(from, to, liquidity).send_recv(pair).await;
         let Ok(transfer_liquidity_status) = transfer_liquidity_res else {
             return Err(RouterError::TransferFromLiquidityFailed);
         };
         if !transfer_liquidity_status {
             return Err(RouterError::TransferFromLiquidityFailed);
-        };
-        Ok(())
-    }
-
-    pub async fn transfer_liquidity(&mut self, pair:ActorId, to:ActorId, liquidity:U256) -> Result<(),RouterError>{
-        let transfer_liquidity_res = self.lp_client.transfer(to, liquidity).send_recv(pair).await;
-        let Ok(transfer_liquidity_status) = transfer_liquidity_res else {
-            return Err(RouterError::TransferLiquidityFailed);
-        };
-        if !transfer_liquidity_status {
-            return Err(RouterError::TransferLiquidityFailed);
         };
         Ok(())
     }
