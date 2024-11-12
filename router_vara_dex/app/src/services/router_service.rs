@@ -334,7 +334,6 @@ impl RouterService {
         };
         if amount_vara.as_u128() < msg::value() {
             let refund = msg::value() - amount_vara.as_u128();
-            let _ = self._unwrap_vara(U256::from(refund)).await?;
             let _ = msg::send_bytes(msg::source(), b"Transfer Vara", refund);
         }
         self.notify_on(RouterEvent::AddLiquidityVARA { token_a: token, amount_a: amount_token, amount_vara, to, liquidity: liquidity.clone() }).unwrap();
