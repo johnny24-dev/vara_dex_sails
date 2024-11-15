@@ -110,7 +110,7 @@ impl LPService {
         };
         if fee_on {
             if _k_last != U256::zero() {
-               let root_k = reserve_0.integer_sqrt().checked_mul(reserve_1).unwrap();
+               let root_k = (reserve_0 * reserve_1).integer_sqrt();
                let root_klast = _k_last.integer_sqrt();
                if root_k > root_klast {
                 let numerator = Storage::total_supply().checked_mul(root_k.checked_sub(root_klast).unwrap()).unwrap();

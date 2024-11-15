@@ -7,6 +7,9 @@ pub static mut ROUTER: Option<RouterState> = None;
 pub struct RouterState {
   pub factory_address: ActorId,
   pub wvara_address: ActorId,
+  pub admin:ActorId,
+  pub fund_addr:ActorId,
+  pub swap_fee_bps:u128
 }
 
 impl RouterState {

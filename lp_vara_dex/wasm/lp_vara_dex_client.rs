@@ -34,6 +34,7 @@ impl<R: Remoting + Clone> traits::LpVaraDexFactory for LpVaraDexFactory<R> {
         )
     }
 }
+
 pub mod lp_vara_dex_factory {
     use super::*;
     pub mod io {
@@ -143,8 +144,10 @@ impl<R: Remoting + Clone> traits::LpService for LpService<R> {
         RemotingAction::<_, lp_service::io::TotalSupply>::new(self.remoting.clone(), ())
     }
 }
+
 pub mod lp_service {
     use super::*;
+
     pub mod io {
         use super::*;
         use sails_rs::calls::ActionIo;
@@ -366,6 +369,7 @@ pub mod lp_service {
             type Reply = U256;
         }
     }
+
     #[allow(dead_code)]
     #[cfg(not(target_arch = "wasm32"))]
     pub mod events {
@@ -383,6 +387,8 @@ pub mod lp_service {
                 amount: (U256, U256),
                 to: ActorId,
             },
+            /// Should be returned from
+            /// [`InnerAction::SwapExactTokensForTokens`]/[`InnerAction::SwapTokensForExactTokens`].
             Swap {
                 sender: ActorId,
                 amount_in: (U256, U256),
@@ -394,10 +400,9 @@ pub mod lp_service {
                 reserve_b: u128,
                 block_timestamp_last: u64,
             },
-            Sync {
-                reserve_a: U256,
-                reserve_b: U256,
-            },
+            /// Should be returned from [`InnerAction::Sync`].
+            Sync { reserve_a: U256, reserve_b: U256 },
+            /// Should be returned from [`InnerAction::Skim`].
             Skim {
                 amount_a: U256,
                 amount_b: U256,
@@ -437,16 +442,30 @@ pub mod lp_service {
 #[codec(crate = sails_rs::scale_codec)]
 #[scale_info(crate = sails_rs::scale_info)]
 pub enum LpError {
+    /// An insufficient amount of the A or B token was provided.
     InsufficientAmount,
+    /// A specified amount limit of the former tokens has been exceeded.
     InsufficientFormerAmount,
+    /// A specified amount limit of the latter tokens has been exceeded.
     InsufficientLatterAmount,
+    /// An insufficient amount of liquidity tokens was provided, or the contract
+    /// doesn't have enough of them to continue an action.
     InsufficientLiquidity,
+    /// An invalid recipient was specified.
     InvalidRecipient,
     ZeroActorId,
+    /// One of the contract's FT contracts failed to complete a transfer
+    /// action.
+    ///
+    /// Most often, the reason is that a user didn't give an approval to the
+    /// contract or didn't have enough tokens to transfer.
     TransferFailed,
+    /// An overflow occurred during calculations.
     Overflow,
+    /// A specified deadline for an action was exceeded.
     DeadlineExceeded,
     IdenticalTokens,
+    /// linked Factory contract.
     FeeToGettingFailed,
     InvalidTokens,
     InvalidRouter,
@@ -459,6 +478,7 @@ pub enum LpError {
     InvalidTo,
     CanNotConnectToFactory,
 }
+
 pub mod traits {
     use super::*;
     #[allow(dead_code)]
@@ -476,6 +496,7 @@ pub mod traits {
             decimals: u8,
         ) -> impl Activation<Args = Self::Args>;
     }
+
     #[allow(clippy::type_complexity)]
     pub trait LpService {
         type Args;
@@ -527,9 +548,11 @@ pub mod traits {
         fn total_supply(&self) -> impl Query<Output = U256, Args = Self::Args>;
     }
 }
+
 #[cfg(feature = "with_mocks")]
 #[cfg(not(target_arch = "wasm32"))]
 extern crate std;
+
 #[cfg(feature = "with_mocks")]
 #[cfg(not(target_arch = "wasm32"))]
 pub mod mockall {

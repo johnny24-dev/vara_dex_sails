@@ -26,6 +26,7 @@ impl<R: Remoting + Clone> traits::RouterVaraDexFactory for RouterVaraDexFactory<
         )
     }
 }
+
 pub mod router_vara_dex_factory {
     use super::*;
     pub mod io {
@@ -315,8 +316,10 @@ impl<R: Remoting + Clone> traits::RouterService for RouterService<R> {
         )
     }
 }
+
 pub mod router_service {
     use super::*;
+
     pub mod io {
         use super::*;
         use sails_rs::calls::ActionIo;
@@ -737,6 +740,7 @@ pub mod router_service {
             type Reply = Result<(ActorId, ActorId), super::RouterError>;
         }
     }
+
     #[allow(dead_code)]
     #[cfg(not(target_arch = "wasm32"))]
     pub mod events {
@@ -897,6 +901,7 @@ pub enum RouterError {
     ExcessiveInputAmount,
     TransferFailed,
 }
+
 pub mod traits {
     use super::*;
     #[allow(dead_code)]
@@ -906,6 +911,7 @@ pub mod traits {
         #[allow(clippy::wrong_self_convention)]
         fn new(&self, factory: ActorId, wvara: ActorId) -> impl Activation<Args = Self::Args>;
     }
+
     #[allow(clippy::type_complexity)]
     pub trait RouterService {
         type Args;
@@ -1044,9 +1050,11 @@ pub mod traits {
         ) -> impl Query<Output = Result<(ActorId, ActorId), RouterError>, Args = Self::Args>;
     }
 }
+
 #[cfg(feature = "with_mocks")]
 #[cfg(not(target_arch = "wasm32"))]
 extern crate std;
+
 #[cfg(feature = "with_mocks")]
 #[cfg(not(target_arch = "wasm32"))]
 pub mod mockall {

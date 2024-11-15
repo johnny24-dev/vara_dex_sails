@@ -19,20 +19,93 @@ pub struct RouterService {
 }
 
 impl RouterService {
-    pub fn seed(factory_address: ActorId, wvara_address: ActorId) {
+    pub fn seed(factory_address: ActorId, wvara_address: ActorId, admin_addr:ActorId, fund_addr:ActorId, swap_fee_bps:u128) {
         unsafe {
-            ROUTER = Some(RouterState { factory_address, wvara_address });
+            ROUTER = Some(RouterState { factory_address, wvara_address, admin:admin_addr, fund_addr, swap_fee_bps });
         }
     }
 }
 
-#[service(events = RouterEvent)]
+// #[service(events = RouterEvent)]
 impl RouterService {
     pub fn new(
         factory_client: FactoryServiceClient<GStdRemoting>, 
         vft_client: VftClient<GStdRemoting>, 
         lp_client: LpServiceClient<GStdRemoting>) -> Self {
         Self { factory_client, vft_client, lp_client }
+    }
+
+
+    //admin functions
+
+    pub fn update_new_admin(&mut self, new_addr:ActorId) -> Result<bool,RouterError> {
+        let router_state = RouterState::get_mut();
+        let sender = msg::source();
+        if sender == ActorId::zero() || sender != router_state.admin{
+            return  Err(RouterError::IdenticalAddresses);
+        }
+        router_state.admin = new_addr;
+        Ok(true)
+    }
+
+    pub fn update_new_factorty(&mut self, new_factory_addr:ActorId) -> Result<bool, RouterError> {
+        let router_state = RouterState::get_mut();
+        let sender = msg::source();
+        if sender == ActorId::zero() || sender != router_state.admin{
+            return  Err(RouterError::IdenticalAddresses);
+        }
+        router_state.factory_address = new_factory_addr;
+        Ok(true)
+    }
+
+    pub fn update_new_wrapvara(&mut self, new_wvara_addr:ActorId) -> Result<bool, RouterError> {
+        let router_state = RouterState::get_mut();
+        let sender = msg::source();
+        if sender == ActorId::zero() || sender != router_state.admin{
+            return  Err(RouterError::IdenticalAddresses);
+        }
+        router_state.wvara_address = new_wvara_addr;
+        Ok(true)
+    }
+
+    pub fn update_fund_addr(&mut self, new_fund_addr:ActorId) -> Result<bool, RouterError> {
+        let router_state = RouterState::get_mut();
+        let sender = msg::source();
+        if sender == ActorId::zero() || sender != router_state.admin{
+            return  Err(RouterError::IdenticalAddresses);
+        }
+        router_state.fund_addr = new_fund_addr;
+        Ok(true)
+    }
+
+    pub fn update_swap_fee_bps(&mut self, new_swap_fee_bps:u128) -> Result<bool, RouterError> {
+        let router_state = RouterState::get_mut();
+        let sender = msg::source();
+        if sender == ActorId::zero() || sender != router_state.admin{
+            return  Err(RouterError::IdenticalAddresses);
+        }
+        router_state.swap_fee_bps = new_swap_fee_bps;
+        Ok(true)
+    }
+
+    pub async fn refund_token(&mut self, token_addr:ActorId, amount:U256) -> Result<bool, RouterError> {
+        let router_state = RouterState::get_mut();
+        let sender = msg::source();
+        if sender == ActorId::zero() || sender != router_state.admin{
+            return  Err(RouterError::IdenticalAddresses);
+        }
+        let _ = self._transfer(token_addr, sender, amount).await?;
+        Ok(true)
+    }
+
+    pub async fn refund_vara(&mut self, amount:u128) -> Result<bool, RouterError> {
+        let router_state = RouterState::get_mut();
+        let sender = msg::source();
+        if sender == ActorId::zero() || sender != router_state.admin{
+            return  Err(RouterError::IdenticalAddresses);
+        }
+        let _ = msg::send_bytes(sender, b"Refund Vara", amount);
+        Ok(true)
     }
 
     //view functions
