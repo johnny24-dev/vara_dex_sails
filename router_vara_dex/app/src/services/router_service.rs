@@ -26,7 +26,7 @@ impl RouterService {
     }
 }
 
-// #[service(events = RouterEvent)]
+#[service(events = RouterEvent)]
 impl RouterService {
     pub fn new(
         factory_client: FactoryServiceClient<GStdRemoting>, 
@@ -476,7 +476,7 @@ impl RouterService {
         let pair = self.pair_for(token_a, token_b).await?;
         
         // Transfer LP tokens to pair
-        let _ = self._transfer_from(pair, msg::source(), pair, liquidity).await?;
+        let _ = self.transfer_from_liquidity(pair, msg::source(), pair, liquidity).await?;
 
         // Burn LP tokens
         let burn_res = self.lp_client.burn(to).send_recv(pair).await;
